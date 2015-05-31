@@ -84,6 +84,9 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     public void make_dirs_for_dropbear() {
+        File f = new File(this.getApplicationContext().getFilesDir() + "/");
+        f.mkdirs();
+
         Util.mkdirs(get_dropbear_home_dir());
         Util.mkdirs(get_dropbear_bin_dir());
         Util.mkdirs(get_dropbear_conf_dir());
@@ -285,7 +288,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 if (!running) { // 开启
                     mWifi.setText(mWifiInfo.getSSID() + "");
                     mDeviceIP = intToIp(mWifiInfo.getIpAddress());
-                    mAddr.setText("shell@" + mDeviceIP + ":" + get_config_sshd_port());
+                    mAddr.setText(mDeviceIP + ":" + get_config_sshd_port());
                     mAddr.setTextColor(mAddr.getResources().getColor(me.xyhe.sshd4android.R.color.snow));
                     mState.setText("Running...");
                     mState.setTextColor(mState.getResources()
