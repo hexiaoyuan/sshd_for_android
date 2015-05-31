@@ -363,8 +363,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
             @Override
             public void onClick(View arg0) {
-                Util.exec(fn_busybox + " killall - 9 dropbear");
-                android.os.Process.killProcess(android.os.Process.myPid()); // 彻底退出APP，不能恢复
+                Util.exec(fn_busybox + " killall -9 dropbear");
+                android.os.Process.killProcess(android.os.Process.myPid()); //
                 System.exit(0);
             }
         });
