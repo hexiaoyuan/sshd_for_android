@@ -26,12 +26,13 @@ now coy dropbear files to sshd4android assert:
 > cp dropbear/libs/armeabi/* sshd_for_android/sshd4android/app/src/main/assets/
 ```
 
-### 3. *NOTE* create your authorized_keys
+### 3. Create your authorized_keys file
 
 ````
 touch sshd_for_android/sshd4android/app/src/main/assets/authorized_keys
 ````
 add your public ssh-key in there if you need.
+*NOTE*: must create this file before build apk.
 
 ### 4.Build sshd4android by AndroidStudio
 open Android-Studio Project sshd_for_android/sshd4android and build it.
