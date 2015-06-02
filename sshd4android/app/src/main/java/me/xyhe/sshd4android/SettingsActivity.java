@@ -111,7 +111,7 @@ public class SettingsActivity extends Activity implements OnClickListener {
                 v.setBackgroundResource(val ? me.xyhe.sshd4android.R.drawable.ok : me.xyhe.sshd4android.R.drawable.no);
                 SharedPreferences.Editor editor = sp.edit();
                 editor.putBoolean("auto_start", val);
-                editor.commit();
+                editor.apply();
                 break;
             }
             case me.xyhe.sshd4android.R.id.btn_start_on_boot: {
@@ -120,7 +120,7 @@ public class SettingsActivity extends Activity implements OnClickListener {
                 v.setBackgroundResource(val ? me.xyhe.sshd4android.R.drawable.ok : me.xyhe.sshd4android.R.drawable.no);
                 SharedPreferences.Editor editor = sp.edit();
                 editor.putBoolean("start_on_boot", val);
-                editor.commit();
+                editor.apply();
                 break;
             }
             case me.xyhe.sshd4android.R.id.btn_keep_screen_on: {
@@ -129,7 +129,7 @@ public class SettingsActivity extends Activity implements OnClickListener {
                 v.setBackgroundResource(val ? me.xyhe.sshd4android.R.drawable.ok : me.xyhe.sshd4android.R.drawable.no);
                 SharedPreferences.Editor editor = sp.edit();
                 editor.putBoolean("keep_screen_on", val);
-                editor.commit();
+                editor.apply();
                 break;
             }
             case me.xyhe.sshd4android.R.id.btn_help: {

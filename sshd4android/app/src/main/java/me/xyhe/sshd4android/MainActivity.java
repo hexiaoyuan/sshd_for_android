@@ -1,6 +1,8 @@
 package me.xyhe.sshd4android;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,6 +22,7 @@ import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -39,6 +42,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private TextView mState;
     private AnimationDrawable AniDraw;
     private PopupWindow mPopupwindow;
+    private ListView mLogListView;
 
     // 资源文件
     private String fn_dropbear;
@@ -54,13 +58,38 @@ public class MainActivity extends Activity implements OnClickListener {
     private WifiInfo mWifiInfo;
     private String mDeviceIP;
 
+    private String mLogLine;
+    MyAdapter mAdapter;
+    private List<String> mLogList;
+
+//    Handler mHandler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            SharedPreferences sp_logs = getSharedPreferences("logs", 0);
+//            SharedPreferences sp_Config = getSharedPreferences("config", 0);
+//            switch (msg.what) {
+//                case 0x01:
+//                    Log.i(TAG, "Message :: MAIN get !");
+//                    mLogLine = sp_logs.getString("log", null);
+//                    Log.i(TAG, "Message ::" + mLogLine);
+//                    mLogList.add(mLogLine);
+//                    mAdapter.notifyDataSetChanged();
+//                    break;
+//
+//                default:
+//                    break;
+//            }
+//        }
+//    };
+
     PowerManager mPowerManager = null;
     WakeLock mWakeLock = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        setContentView(me.xyhe.sshd4android.R.layout.main);
+        setContentView(R.layout.main);
 
         findView();
 
@@ -71,19 +100,23 @@ public class MainActivity extends Activity implements OnClickListener {
 
     }
 
-    public String get_dropbear_home_dir() {
+    public String get_dropbear_home_dir()
+    {
         return MainActivity.this.getFilesDir().getParent() + File.separator + "home";
     }
 
-    public String get_dropbear_conf_dir() {
+    public String get_dropbear_conf_dir()
+    {
         return MainActivity.this.getFilesDir().getParent() + File.separator + "home/.ssh";
     }
 
-    public String get_dropbear_bin_dir() {
+    public String get_dropbear_bin_dir()
+    {
         return MainActivity.this.getFilesDir().getParent() + File.separator + "dropbear";
     }
 
-    public void make_dirs_for_dropbear() {
+    public void make_dirs_for_dropbear()
+    {
         File f = new File(this.getApplicationContext().getFilesDir() + "/");
         f.mkdirs();
 
@@ -93,10 +126,10 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
 
-    public void extract_asset() {
+    public void extract_asset()
+    {
         String dir_conf = get_dropbear_conf_dir();
         String dir_bin = get_dropbear_bin_dir();
-
 
         fn_dropbear = Util.extractAssetToDir(this, "dropbear", dir_bin, "dropbear", false);
         Util.exec("chmod 777 " + fn_dropbear);
@@ -121,13 +154,13 @@ public class MainActivity extends Activity implements OnClickListener {
         fn_busybox = Util.extractAssetToDir(this, "busybox-armv7l", dir_bin, "busybox", false);
         Util.exec("chmod 777 " + fn_busybox);
 
-
         fn_auth_keys = Util.extractAssetToDir(this, "authorized_keys", dir_conf, "authorized_keys", false);
         Util.exec("chmod 600 " + fn_auth_keys);
     }
 
 
-    public void findView() {
+    public void findView()
+    {
         mMenu = (ImageButton) findViewById(R.id.ibtn_menu);
         mHelp = (ImageButton) findViewById(R.id.btn_help);
         mOn_off = (ImageButton) findViewById(R.id.btn_on_off);
@@ -139,24 +172,16 @@ public class MainActivity extends Activity implements OnClickListener {
         mAddr = (TextView) findViewById(R.id.tv_addr);
         mState = (TextView) findViewById(R.id.tv_state);
 
+        mLogListView = (ListView) findViewById(R.id.log_list);
+
         mMenu.setOnClickListener(this);
         mHelp.setOnClickListener(this);
         mOn_off.setOnClickListener(this);
         mOption.setOnClickListener(this);
     }
 
-    //    private void get_running_process() {
-//        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-//        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
-//        for (ActivityManager.RunningAppProcessInfo app : appList) {
-//            Log.d(TAG,"app: " + app.processName);
-//        }
-//
-//        for(ActivityManager.RunningServiceInfo service : am.getRunningServices(1000)) {
-//            Log.d(TAG,"service: "+ service.pid);
-//        }
-//    }
-    private boolean is_dropbear_running() {
+    private boolean is_dropbear_running()
+    {
         String txt = Util.exec_out(fn_busybox + " ps");
         if (txt.contains(fn_dropbear)) {
             return true;
@@ -173,15 +198,19 @@ public class MainActivity extends Activity implements OnClickListener {
         mWifiInfo = wifiManager.getConnectionInfo();
         mWifi.setText(mWifiInfo.getSSID() + "");
 
+        mLogList = new ArrayList<String>();
+        mAdapter = new MyAdapter(MainActivity.this, mLogList);
+        mLogListView.setAdapter(mAdapter);
+
         boolean running = is_dropbear_running();
 
         if (running) {
             mDeviceIP = intToIp(mWifiInfo.getIpAddress());
             mAddr.setText(mDeviceIP + ":" + get_config_sshd_port());
-            mAddr.setTextColor(mAddr.getResources().getColor(me.xyhe.sshd4android.R.color.snow));
+            mAddr.setTextColor(mAddr.getResources().getColor(R.color.snow));
             mState.setText("Running...");
-            mState.setTextColor(mState.getResources().getColor(me.xyhe.sshd4android.R.color.snow));
-            mOn_off.setBackgroundResource(me.xyhe.sshd4android.R.drawable.btn_touch_on);
+            mState.setTextColor(mState.getResources().getColor(R.color.snow));
+            mOn_off.setBackgroundResource(R.drawable.btn_touch_on);
             new SshdDeamonTask().start();
             mOn_off.setBackgroundResource(R.anim.pc_loading);
             AniDraw = (AnimationDrawable) mOn_off.getBackground();
@@ -190,19 +219,17 @@ public class MainActivity extends Activity implements OnClickListener {
 
         SharedPreferences sp = getSharedPreferences("config", 0);
         boolean keep_screen_on = sp.getBoolean("keep_screen_on", false);
-        // 应用运行时，保持屏幕高亮，不锁屏
         if (keep_screen_on) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
-    public String get_config_sshd_port()
-    {
+    public String get_config_sshd_port() {
         SharedPreferences sp = getSharedPreferences("config", 0);
         return sp.getString("sshd_port", "22022");
     }
-    public String get_config_sshd_passwd()
-    {
+
+    public String get_config_sshd_passwd() {
         SharedPreferences sp = getSharedPreferences("config", 0);
         return sp.getString("sshd_passwd", "123123");
     }
@@ -258,7 +285,6 @@ public class MainActivity extends Activity implements OnClickListener {
             Log.i(TAG, cli);
             Util.exec(cli);
         }
-
     }
 
     //Boolean mStyle = true;
@@ -289,27 +315,25 @@ public class MainActivity extends Activity implements OnClickListener {
                     mWifi.setText(mWifiInfo.getSSID() + "");
                     mDeviceIP = intToIp(mWifiInfo.getIpAddress());
                     mAddr.setText(mDeviceIP + ":" + get_config_sshd_port());
-                    mAddr.setTextColor(mAddr.getResources().getColor(me.xyhe.sshd4android.R.color.snow));
+                    mAddr.setTextColor(mAddr.getResources().getColor(R.color.snow));
                     mState.setText("Running...");
                     mState.setTextColor(mState.getResources()
                             .getColor(me.xyhe.sshd4android.R.color.snow));
-                    mOn_off.setBackgroundResource(me.xyhe.sshd4android.R.drawable.btn_touch_on);
+                    mOn_off.setBackgroundResource(R.drawable.btn_touch_on);
                     new SshdDeamonTask().start();
                     mOn_off.setBackgroundResource(R.anim.pc_loading);
                     AniDraw = (AnimationDrawable) mOn_off.getBackground();
                     AniDraw.start();
                 } else { // 关闭
                     AniDraw.stop();
-                    mOn_off.setBackgroundResource(me.xyhe.sshd4android.R.drawable.btn_touch_off);
+                    mOn_off.setBackgroundResource(R.drawable.btn_touch_off);
                     Util.exec(fn_busybox + " killall dropbear");
                     mWifi.setText(mWifiInfo.getSSID() + "");
                     mDeviceIP = intToIp(mWifiInfo.getIpAddress());
                     mAddr.setText("-");
-                    mAddr.setTextColor(mAddr.getResources().getColor(
-                            me.xyhe.sshd4android.R.color.darkred));
+                    mAddr.setTextColor(mAddr.getResources().getColor(R.color.darkred));
                     mState.setText("-");
-                    mState.setTextColor(mState.getResources().getColor(
-                            me.xyhe.sshd4android.R.color.darkred));
+                    mState.setTextColor(mState.getResources().getColor(R.color.darkred));
                 }
                 break;
 
@@ -329,12 +353,9 @@ public class MainActivity extends Activity implements OnClickListener {
         dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
-        View customView = getLayoutInflater().inflate(me.xyhe.sshd4android.R.layout.show, null,
-                false);
-        mPopupwindow = new PopupWindow(customView, dm.widthPixels,
-                dm.heightPixels);
+        View customView = getLayoutInflater().inflate(R.layout.show, null, false);
+        mPopupwindow = new PopupWindow(customView, dm.widthPixels, dm.heightPixels);
 
-        // 自定义view添加触摸事件
         customView.setOnTouchListener(new OnTouchListener() {
 
             @Override
@@ -347,24 +368,21 @@ public class MainActivity extends Activity implements OnClickListener {
             }
         });
 
-        Button clear = (Button) customView.findViewById(me.xyhe.sshd4android.R.id.btn_clear);
-        Button login_out = (Button) customView.findViewById(me.xyhe.sshd4android.R.id.btn_login_out);
-        // 清除日志按钮事件
-        clear.setOnClickListener(new OnClickListener() {
+        Button clear = (Button) customView.findViewById(R.id.btn_clear);
+        Button login_out = (Button) customView.findViewById(R.id.btn_login_out);
 
+        clear.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
 
             }
         });
 
-        // 退出按钮事件
         login_out.setOnClickListener(new OnClickListener() {
-
             @Override
             public void onClick(View arg0) {
                 Util.exec(fn_busybox + " killall -9 dropbear");
-                android.os.Process.killProcess(android.os.Process.myPid()); //
+                android.os.Process.killProcess(android.os.Process.myPid()); // clean myself all
                 System.exit(0);
             }
         });
