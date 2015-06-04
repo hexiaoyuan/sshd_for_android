@@ -156,6 +156,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
         fn_auth_keys = Util.extractAssetToDir(this, "authorized_keys", dir_conf, "authorized_keys", false);
         Util.exec("chmod 600 " + fn_auth_keys);
+
+		String dir_home = get_dropbear_home_dir();
+		String tmp = Util.extractAssetToDir(this, "profile", dir_home, ".profile", false);
+        Util.exec("chmod 600 " + tmp);
     }
 
 
