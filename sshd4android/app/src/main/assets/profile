@@ -2,14 +2,7 @@
 # $Id: /data/data/me.xyhe.sshd4android/home/.profile
 #
 
-export PATH=/data/data/me.xyhe.sshd4android/dropbear:$PATH
+#export PATH=/data/data/me.xyhe.sshd4android/dropbear:$PATH
 
 alias ps='/data/data/me.xyhe.sshd4android/dropbear/busybox ps'
-
 alias ls='/data/data/me.xyhe.sshd4android/dropbear/busybox ls'
-alias lf='ls -CF'
-alias ll='ls -la'
-alias l='ls -l'
-alias lh='ls -lh'
-alias la='ls -A'
-
